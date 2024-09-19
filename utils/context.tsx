@@ -10,6 +10,8 @@ import { useConnectWallet } from "@web3-onboard/react";
 import { initializeRequestNetwork } from "./initializeRN";
 import type { RequestNetwork } from "@requestnetwork/request-client.js";
 
+import { useInvokeSnap } from '../lib/hooks'
+
 interface ContextType {
   wallet: WalletState | null;
   requestNetwork: RequestNetwork | null;
@@ -22,11 +24,12 @@ export const Provider = ({ children }: { children: ReactNode }) => {
   const [requestNetwork, setRequestNetwork] = useState<RequestNetwork | null>(
     null
   );
+  const invokeSnap = useInvokeSnap();
 
   useEffect(() => {
     if (wallet) {
       const { provider } = wallet;
-      initializeRequestNetwork(setRequestNetwork, provider);
+      initializeRequestNetwork(setRequestNetwork, provider, invokeSnap);
     }
   }, [wallet]);
 

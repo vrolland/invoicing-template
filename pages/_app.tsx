@@ -7,6 +7,11 @@ import type { AppProps } from "next/app";
 import { Montserrat } from "next/font/google";
 import { onboardConfig } from "../utils/connectWallet";
 
+
+import {
+  MetaMaskProvider
+} from '../lib/hooks';
+
 const montserrat = Montserrat({ subsets: ["latin"] });
 
 const wen3Onboard = init({
@@ -19,12 +24,14 @@ const wen3Onboard = init({
 export default function App({ Component, pageProps }: AppProps) {
   return (
     <div className={`${montserrat.className}`}>
-      <Web3OnboardProvider web3Onboard={wen3Onboard}>
-        <Provider>
-          <Navbar />
-          <Component {...pageProps} />
-        </Provider>
-      </Web3OnboardProvider>
+      <MetaMaskProvider>
+        <Web3OnboardProvider web3Onboard={wen3Onboard}>
+          <Provider>
+            <Navbar />
+            <Component {...pageProps} />
+          </Provider>
+        </Web3OnboardProvider>
+      </MetaMaskProvider>
       <GoogleTagManager gtmId={process.env.NEXT_PUBLIC_GTM_ID as string} />
     </div>
   );
