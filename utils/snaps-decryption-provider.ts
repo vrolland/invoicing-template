@@ -1,23 +1,70 @@
 import { DecryptionProviderTypes, EncryptionTypes, IdentityTypes } from '@requestnetwork/types';
+import { isEqual } from 'lodash';
 
-/**
- * Implementation of the decryption provider from private key
- * Allows to decrypt() with "ethereumAddress" identities thanks to their private key given in constructor() or addDecryptionParameters()
- */
+interface QueueItem {
+  method: string;
+  params: any;
+  resolve: (value: any) => void;
+  reject: (reason?: any) => void;
+}
+
+interface CacheItem {
+  result: any;
+}
+
 export class SnapsDecryptionProvider
   implements DecryptionProviderTypes.IDecryptionProvider
 {
   private invokeSnap;
+  private queue: QueueItem[] = [];
+  private processingQueue: boolean = false;
+  private cache: { [key: string]: CacheItem } = {};
   /** list of supported encryption method */
   public supportedMethods: EncryptionTypes.METHOD[] = [EncryptionTypes.METHOD.ECIES];
   /** list of supported identity types */
   public supportedIdentityTypes: IdentityTypes.TYPE[] = [IdentityTypes.TYPE.ETHEREUM_ADDRESS];
 
-  /** Dictionary containing all the private keys indexed by address */
-//   private decryptionParametersDictionary: IDecryptionParametersDictionary;
-
   constructor(invokeSnap: any) {
     this.invokeSnap = invokeSnap;
+  }
+
+  private createCacheKey(method: string, params: any): string {
+    return JSON.stringify({ method, params });
+  }
+
+  private enqueue(method: string, params: any): Promise<any> {
+    const cacheKey = this.createCacheKey(method, params);
+    if (this.cache[cacheKey]) {
+      return Promise.resolve(this.cache[cacheKey].result);
+    }
+
+    return new Promise((resolve, reject) => {
+      this.queue.push({ method, params, resolve, reject });
+      this.processQueue(); // start processing if not already processing
+    });
+  }
+
+  private async processQueue(): Promise<void> {
+    if (this.processingQueue) return; // already processing
+    this.processingQueue = true;
+
+    while (this.queue.length > 0) {
+      const currentItem = this.queue.shift();
+      if (currentItem) {
+        const cacheKey = this.createCacheKey(currentItem.method, currentItem.params);
+        try {
+          console.log('START ', { method: currentItem.method, params: currentItem.params });
+          const result = await this.invokeSnap({ method: currentItem.method, params: currentItem.params });
+          console.log({ method: currentItem.method, params: currentItem.params }, result);
+          this.cache[cacheKey] = { result };
+          currentItem.resolve(result);
+        } catch (error) {
+          currentItem.reject(error);
+        }
+      }
+    }
+
+    this.processingQueue = false;
   }
 
   /**
@@ -40,19 +87,9 @@ export class SnapsDecryptionProvider
       throw Error(`Identity type not supported ${identity.type}`);
     }
 
-    const decryptedValue = await this.invokeSnap({ method: 'decrypt', params: {
-      encryptedData,
-      // :{
-      //   type: 'ecies',
-      //   value: 'e462a1c191d0ded75d658d18893c3ea9023b320924af170bc167d3b6fdfc14fc664527d2ee0387c84a41d671fe28b7ee15906b9d2cf4b7fb31b61541aa9bce6ede0ffe592b3b089f8caaa29d2b1a03afb7f08ed8adcd322cd1c40b97f4b2f1d9d3'
-      // }, 
-      identity
-      // : {
-      //   type: 'ethereumAddress',
-      //   value: '0xb3de30b4be816dd066b1c5c5c8aed340b88a18a1'
-      // }
-    } });
-
+    console.log('? decrypt?', identity);
+    const decryptedValue = await this.enqueue('decrypt', { encryptedData, identity });
+    console.log('decrypt:', identity, decryptedValue);
     return decryptedValue;
   }
 
@@ -64,10 +101,15 @@ export class SnapsDecryptionProvider
    * @returns true if the identity is registered, false otherwise
    */
   public async isIdentityRegistered(identity: IdentityTypes.IIdentity): Promise<boolean> {
-    // TODO
-    return true;
+    console.log('? isIdentityRegistered?', identity);
+    const found = await this.enqueue('isRegistered', { identity });
+    console.log('isIdentityRegistered:', identity, found);
+
+    // const list = await this.enqueue('list', {});
+    // console.log("#####################################################");
+    // console.log(list)
+    // console.log("#####################################################");
+
+    return found;
   }
-
 }
-
-
