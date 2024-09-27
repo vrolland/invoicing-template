@@ -1,5 +1,4 @@
 import { DecryptionProviderTypes, EncryptionTypes, IdentityTypes } from '@requestnetwork/types';
-import { isEqual } from 'lodash';
 
 interface QueueItem {
   method: string;
@@ -53,9 +52,7 @@ export class SnapsDecryptionProvider
       if (currentItem) {
         const cacheKey = this.createCacheKey(currentItem.method, currentItem.params);
         try {
-          console.log('START ', { method: currentItem.method, params: currentItem.params });
           const result = await this.invokeSnap({ method: currentItem.method, params: currentItem.params });
-          console.log({ method: currentItem.method, params: currentItem.params }, result);
           this.cache[cacheKey] = { result };
           currentItem.resolve(result);
         } catch (error) {
@@ -87,9 +84,7 @@ export class SnapsDecryptionProvider
       throw Error(`Identity type not supported ${identity.type}`);
     }
 
-    console.log('? decrypt?', identity);
     const decryptedValue = await this.enqueue('decrypt', { encryptedData, identity });
-    console.log('decrypt:', identity, decryptedValue);
     return decryptedValue;
   }
 
@@ -101,15 +96,7 @@ export class SnapsDecryptionProvider
    * @returns true if the identity is registered, false otherwise
    */
   public async isIdentityRegistered(identity: IdentityTypes.IIdentity): Promise<boolean> {
-    console.log('? isIdentityRegistered?', identity);
     const found = await this.enqueue('isRegistered', { identity });
-    console.log('isIdentityRegistered:', identity, found);
-
-    // const list = await this.enqueue('list', {});
-    // console.log("#####################################################");
-    // console.log(list)
-    // console.log("#####################################################");
-
     return found;
   }
 }
