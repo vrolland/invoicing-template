@@ -15,8 +15,7 @@ import { defaultSnapOrigin } from '../lib/hooks/config';
 
 
 export default function CreateInvoice() {
-  const { wallet, requestNetwork } = useAppContext();
-
+  const { wallet, requestNetwork, decryptionProvider } = useAppContext();
 
   const { isFlask, snapsDetected } = useMetaMask();
   
@@ -41,8 +40,6 @@ export default function CreateInvoice() {
   //     });
   //   console.log(decryptedValue);   
   // };
-
-
 
   return (
     <>
@@ -71,6 +68,7 @@ export default function CreateInvoice() {
           config={config}
           signer={wallet?.accounts[0]?.address || ""}
           requestNetwork={requestNetwork}
+          decryptionProvider={decryptionProvider}
           currencies={currencies}
         />
       </div>

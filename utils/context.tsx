@@ -15,6 +15,7 @@ import { useInvokeSnap } from '../lib/hooks'
 interface ContextType {
   wallet: WalletState | null;
   requestNetwork: RequestNetwork | null;
+  decryptionProvider: any | null;
 }
 
 const Context = createContext<ContextType | undefined>(undefined);
@@ -24,12 +25,15 @@ export const Provider = ({ children }: { children: ReactNode }) => {
   const [requestNetwork, setRequestNetwork] = useState<RequestNetwork | null>(
     null
   );
+  const [decryptionProvider, setterDecryptionProvider] = useState<any | null>(
+    null
+  );
   const invokeSnap = useInvokeSnap();
 
   useEffect(() => {
     if (wallet) {
       const { provider } = wallet;
-      initializeRequestNetwork(setRequestNetwork, provider, invokeSnap);
+      initializeRequestNetwork(setRequestNetwork, provider, setterDecryptionProvider, invokeSnap);
     }
   }, [wallet]);
 
@@ -38,6 +42,7 @@ export const Provider = ({ children }: { children: ReactNode }) => {
       value={{
         wallet,
         requestNetwork,
+        decryptionProvider
       }}
     >
       {children}

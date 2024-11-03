@@ -5,7 +5,7 @@ import {
   SnapsDecryptionProvider
 } from './snaps-decryption-provider';
 
-export const initializeRequestNetwork = (setter: any, walletClient: any, invokeSnap?: any) => {
+export const initializeRequestNetwork = (setter: any, walletClient: any, setterDecryptionProvider?: any, invokeSnap?: any) => {
   try {
     const snapsDecryptionProvider = new SnapsDecryptionProvider(invokeSnap);
     const web3SignatureProvider = new Web3SignatureProvider(walletClient);
@@ -63,6 +63,7 @@ export const initializeRequestNetwork = (setter: any, walletClient: any, invokeS
     });
 
     setter(requestNetwork);
+    setterDecryptionProvider(snapsDecryptionProvider);
   } catch (error) {
     console.error("Failed to initialize the Request Network:", error);
     setter(null);

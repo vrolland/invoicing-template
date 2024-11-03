@@ -30,5 +30,6 @@ interface CreateInvoiceFormProps extends HTMLElement {
   config: IConfig;
   signer: string;
   requestNetwork: RequestNetwork;
+  decryptionProvider: any;
   currencies: any;
 }
