@@ -1,11 +1,15 @@
-import Navbar from "@/components/common/Navbar";
-import "@/styles/globals.css";
-import { Provider } from "@/utils/context";
-import { GoogleTagManager } from "@next/third-parties/google";
-import { init, Web3OnboardProvider } from "@web3-onboard/react";
+import { WagmiProvider } from "wagmi";
 import type { AppProps } from "next/app";
 import { Montserrat } from "next/font/google";
-import { onboardConfig } from "../utils/connectWallet";
+import { RainbowKitProvider } from "@rainbow-me/rainbowkit";
+import { GoogleTagManager } from "@next/third-parties/google";
+import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
+import { Navbar, VersionDisplay } from "@/components/common";
+import { Provider } from "@/utils/context";
+import { rainbowKitConfig } from "@/utils/wagmiConfig";
+
+import "@/styles/globals.css";
+import "@rainbow-me/rainbowkit/styles.css";
 
 
 import {
@@ -14,24 +18,29 @@ import {
 
 const montserrat = Montserrat({ subsets: ["latin"] });
 
-const wen3Onboard = init({
-  connect: {
-    autoConnectAllPreviousWallet: true,
-  },
-  ...onboardConfig,
-});
-
 export default function App({ Component, pageProps }: AppProps) {
+  const queryClient = new QueryClient();
+
   return (
     <div className={`${montserrat.className}`}>
-      <MetaMaskProvider>
-        <Web3OnboardProvider web3Onboard={wen3Onboard}>
-          <Provider>
-            <Navbar />
-            <Component {...pageProps} />
-          </Provider>
-        </Web3OnboardProvider>
+    <MetaMaskProvider>
+      <WagmiProvider config={rainbowKitConfig}>
+          <QueryClientProvider client={queryClient}>
+            <RainbowKitProvider>
+              <Provider>
+                <Navbar />
+                <Component {...pageProps} />
+                <VersionDisplay
+                  githubRelease={
+                    "https://github.com/RequestNetwork/invoicing-template/releases"
+                  }
+                />
+              </Provider>
+            </RainbowKitProvider>
+          </QueryClientProvider>
+        </WagmiProvider>
       </MetaMaskProvider>
+      <GoogleTagManager gtmId={process.env.NEXT_PUBLIC_GTM_ID as string} />
       <GoogleTagManager gtmId={process.env.NEXT_PUBLIC_GTM_ID as string} />
     </div>
   );

@@ -1,8 +1,15 @@
-import CreateInvoiceForm from "@requestnetwork/create-invoice-form/react";
 import Head from "next/head";
+import dynamic from "next/dynamic";
 import { config } from "@/utils/config";
 import { useAppContext } from "@/utils/context";
 import { currencies } from "@/utils/currencies";
+import { rainbowKitConfig as wagmiConfig } from "@/utils/wagmiConfig";
+import { Spinner } from "@/components/ui";
+
+const CreateInvoiceForm = dynamic(
+  () => import("@requestnetwork/create-invoice-form/react"),
+  { ssr: false, loading: () => <Spinner /> }
+);
 
 
 import {
@@ -70,6 +77,7 @@ export default function CreateInvoice() {
           requestNetwork={requestNetwork}
           decryptionProvider={decryptionProvider}
           currencies={currencies}
+          wagmiConfig={wagmiConfig}
         />
       </div>
     </>

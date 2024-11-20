@@ -5,15 +5,13 @@ import React, {
   ReactNode,
   useEffect,
 } from "react";
-import { WalletState } from "@web3-onboard/core";
-import { useConnectWallet } from "@web3-onboard/react";
 import { initializeRequestNetwork } from "./initializeRN";
 import type { RequestNetwork } from "@requestnetwork/request-client.js";
+import { useAccount, useWalletClient } from "wagmi";
 
 import { useInvokeSnap } from '../lib/hooks'
 
 interface ContextType {
-  wallet: WalletState | null;
   requestNetwork: RequestNetwork | null;
   decryptionProvider: any | null;
 }
@@ -21,7 +19,8 @@ interface ContextType {
 const Context = createContext<ContextType | undefined>(undefined);
 
 export const Provider = ({ children }: { children: ReactNode }) => {
-  const [{ wallet }] = useConnectWallet();
+  const { data: walletClient } = useWalletClient();
+  const { address, isConnected, chainId } = useAccount();
   const [requestNetwork, setRequestNetwork] = useState<RequestNetwork | null>(
     null
   );
@@ -31,16 +30,14 @@ export const Provider = ({ children }: { children: ReactNode }) => {
   const invokeSnap = useInvokeSnap();
 
   useEffect(() => {
-    if (wallet) {
-      const { provider } = wallet;
-      initializeRequestNetwork(setRequestNetwork, provider, setterDecryptionProvider, invokeSnap);
+    if (walletClient && isConnected && address && chainId) {
+      initializeRequestNetwork(setRequestNetwork, walletClient, setterDecryptionProvider, invokeSnap);
     }
-  }, [wallet]);
+  }, [walletClient, chainId, address, isConnected]);
 
   return (
     <Context.Provider
       value={{
-        wallet,
         requestNetwork,
         decryptionProvider
       }}

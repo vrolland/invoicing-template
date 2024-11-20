@@ -1,14 +1,18 @@
+import Head from "next/head";
+import dynamic from "next/dynamic";
 import { config } from "@/utils/config";
 import { useAppContext } from "@/utils/context";
 import { currencies } from "@/utils/currencies";
-import InvoiceDashboard from "@requestnetwork/invoice-dashboard/react";
-import { useConnectWallet } from "@web3-onboard/react";
-import Head from "next/head";
+import { rainbowKitConfig as wagmiConfig } from "@/utils/wagmiConfig";
+import { Spinner } from "@/components/ui";
+
+const InvoiceDashboard = dynamic(
+  () => import("@requestnetwork/invoice-dashboard/react"),
+  { ssr: false, loading: () => <Spinner /> }
+);
 
 export default function InvoiceDashboardPage() {
-  const [{ wallet }] = useConnectWallet();
   const { requestNetwork } = useAppContext();
-
   return (
     <>
       <Head>
@@ -19,7 +23,7 @@ export default function InvoiceDashboardPage() {
           config={config}
           currencies={currencies}
           requestNetwork={requestNetwork}
-          wallet={wallet}
+          wagmiConfig={wagmiConfig}
         />
       </div>
     </>
