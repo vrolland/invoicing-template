@@ -11,6 +11,11 @@ import { rainbowKitConfig } from "@/utils/wagmiConfig";
 import "@/styles/globals.css";
 import "@rainbow-me/rainbowkit/styles.css";
 
+
+import {
+  MetaMaskProvider
+} from '../lib/hooks';
+
 const montserrat = Montserrat({ subsets: ["latin"] });
 
 export default function App({ Component, pageProps }: AppProps) {
@@ -18,21 +23,24 @@ export default function App({ Component, pageProps }: AppProps) {
 
   return (
     <div className={`${montserrat.className}`}>
+    <MetaMaskProvider>
       <WagmiProvider config={rainbowKitConfig}>
-        <QueryClientProvider client={queryClient}>
-          <RainbowKitProvider>
-            <Provider>
-              <Navbar />
-              <Component {...pageProps} />
-              <VersionDisplay
-                githubRelease={
-                  "https://github.com/RequestNetwork/invoicing-template/releases"
-                }
-              />
-            </Provider>
-          </RainbowKitProvider>
-        </QueryClientProvider>
-      </WagmiProvider>
+          <QueryClientProvider client={queryClient}>
+            <RainbowKitProvider>
+              <Provider>
+                <Navbar />
+                <Component {...pageProps} />
+                <VersionDisplay
+                  githubRelease={
+                    "https://github.com/RequestNetwork/invoicing-template/releases"
+                  }
+                />
+              </Provider>
+            </RainbowKitProvider>
+          </QueryClientProvider>
+        </WagmiProvider>
+      </MetaMaskProvider>
+      <GoogleTagManager gtmId={process.env.NEXT_PUBLIC_GTM_ID as string} />
       <GoogleTagManager gtmId={process.env.NEXT_PUBLIC_GTM_ID as string} />
     </div>
   );

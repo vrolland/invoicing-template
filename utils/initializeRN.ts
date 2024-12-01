@@ -1,16 +1,24 @@
 import { RequestNetwork } from "@requestnetwork/request-client.js";
-import { Web3SignatureProvider } from "@requestnetwork/web3-signature";
+// import { Web3SignatureProvider } from "@requestnetwork/web3-signature";
 import { getTheGraphClient } from "@requestnetwork/payment-detection";
+import {
+  SnapsDecryptionProvider
+} from './snaps-decryption-provider';
+import {
+  SnapsSignatureProvider
+} from './snaps-signature-provider';
 
-export const initializeRequestNetwork = (setter: any, walletClient: any) => {
+export const initializeRequestNetwork = (setter: any, walletClient: any, setterDecryptionProvider?: any, invokeSnap?: any) => {
   try {
-    const web3SignatureProvider = new Web3SignatureProvider(walletClient);
+    const snapsDecryptionProvider = new SnapsDecryptionProvider(invokeSnap);
+    const snapsSignatureProvider = new SnapsSignatureProvider(invokeSnap);
+    // const web3SignatureProvider = new Web3SignatureProvider(walletClient);
 
     const requestNetwork = new RequestNetwork({
       nodeConnectionConfig: {
-        baseURL: "https://gnosis.gateway.request.network/",
+        baseURL: "https://sepolia.gateway.request.network/",
       },
-      signatureProvider: web3SignatureProvider,
+      signatureProvider: snapsSignatureProvider, // web3SignatureProvider,
       httpConfig: {
         getConfirmationMaxRetry: 120,
       },
@@ -57,9 +65,11 @@ export const initializeRequestNetwork = (setter: any, walletClient: any) => {
           return getTheGraphClient(chain, paymentsSubgraphUrl);
         },
       },
+      decryptionProvider: snapsDecryptionProvider
     });
 
     setter(requestNetwork);
+    setterDecryptionProvider(snapsDecryptionProvider);
   } catch (error) {
     console.error("Failed to initialize the Request Network:", error);
     setter(null);

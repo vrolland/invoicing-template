@@ -30,5 +30,6 @@ interface CreateInvoiceFormProps extends HTMLElement {
   config: IConfig;
   wagmiConfig: WagmiConfig;
   requestNetwork: RequestNetwork;
+  decryptionProvider: any;
   currencies: any;
 }
